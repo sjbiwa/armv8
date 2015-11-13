@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include "common.h"
 #include "armv8reg.h"
-
+#include "gicv3reg.h"
 
 #define	hword(v)		((uint32_t)((v)>>32))
 #define	lword(v)		((uint32_t)(v))
