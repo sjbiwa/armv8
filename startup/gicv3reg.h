@@ -5,9 +5,7 @@
 #ifndef _GICV3REG_H_
 #define	_GICV3REG_H_
 
-#define	GIC_GICD_BASE			(0x80000000u)
-#define	GIC_GICR_BASE			(0x80000000u)
-#define	GIC_GICC_BASE			(0x80000000u)
+#include "target_conf.h" /* GIC base register define */
 
 #define	GICD_CTLR				(GIC_GICD_BASE+0x0000u)					/* RW See the register description Distributor Control Register */
 #define	GICD_TYPER				(GIC_GICD_BASE+0x0004u)					/* RO IMPLEMENTATION DEFINED Interrupt Controller Type Register */

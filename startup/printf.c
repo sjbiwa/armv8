@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "common.h"
+#include "utils.h"
 
 #define	UART_BASE			0x001C090000
 
@@ -314,4 +315,10 @@ static char		buff[1024];
 
 	va_end(arg);
 	debug_print(buff);
+	return 0;
+}
+
+void test_func(char* fmt, ...)
+{
+	return;
 }

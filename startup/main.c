@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include "common.h"
+#include "utils.h"
 #include "armv8reg.h"
 #include "gicv3reg.h"
 
@@ -14,53 +15,42 @@ void wait(uint32_t t)
 	}
 }
 
+void c_exc_handler()
+{
+	tprintf("c_exc_handler:%08X\n", (uint32_t)CurrentEL_get());
+}
+
+volatile uint32_t t_value1 = 0;
+volatile uint32_t t_value2 = 0;
+
+void main_entry()
+{
+	tprintf("entry_el1\n");
+	register uint32_t value1 = 0;
+	register uint32_t value2 = 0;
+	for (;;) {
+		iowrite32(SYSTEM_BASE+0x0008,  value1);
+		value1 += 1; t_value1 += 1;
+		value2 += 3; t_value2 += 3;
+		wait(50000000);
+		tprintf("LED:%08X\n", value1);
+		__asm volatile ("SVC #0":::"memory");
+		if ( (value1 != t_value1) || (value2 != t_value2) ) {
+			tprintf("ERROR\n");
+		}
+		tprintf("main_entry:%08X\n", (uint32_t)CurrentEL_get());
+	}
+}
+
 int main()
 {
-	uint32_t value = 0;
+	extern void return_el1();
+
 	tprintf_init();
+	tprintf("Hello world\n");
 
-	uint64_t reg;
-	uint32_t reg32;
-	int32_t ireg32;
-	reg32 = VBAR_EL3_get();
-	ireg32 = VBAR_EL3_get();
-	reg = VBAR_EL3_get();
+	main_entry();
 
-	reg32 = 0x123400;
-	ireg32 = 0x123400;
-	reg = 0x123400;
-
-	VBAR_EL3_set(reg32);
-	VBAR_EL3_set(ireg32);
-	VBAR_EL3_set(reg);
-
-	reg = ID_AA64MMFR0_EL1_get();
-	tprintf("ID_AA64MMFR0_EL1=%08X:%08X\n", hword(reg), lword(reg));
-
-	reg = RVBAR_EL3_get();
-	tprintf("RVBAR_EL3=%08X:%08X\n", hword(reg), lword(reg));
-
-	reg = VBAR_EL3_get();
-	tprintf("VBAR_EL3=%08X:%08X\n", hword(reg), lword(reg));
-
-	for (;;);
-
-	for (;;) {
-		tprintf("%08X\n", ioread32(0x0000000080000000L));
-		tprintf("%08X\n", ioread32(0x000F000080000010L));
-		tprintf("%08X\n", ioread32(0x00F0000080000020L));
-		tprintf("%08X\n", ioread32(0x0F00000080000030L));
-		tprintf("%08X\n", ioread32(0xF000000080000040L));
-		tprintf("%08X\n", ioread32(0x0000000080000050L));
-	}
-	for (;;) {
-		tprintf("Hello world\n");
-		tprintf("%d %d %d %d %d\n", sizeof(char), sizeof(short), sizeof(int), sizeof(long), sizeof(long long));
-		tprintf("%d %d %d\n", sizeof(void*), sizeof(float), sizeof(double));
-		iowrite32(SYSTEM_BASE+0x0008,  value);
-		value++;
-		wait(100000);
-	}
 	return 0;
 }
 

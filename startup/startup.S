@@ -6,12 +6,40 @@
 _startup:
 	/* disable interrupt */
 	DAIFSet_seti(0xf)
-	//msr		DAIFset, #0xf
+
+	/* SP is ELx */
+	SPSel_seti(1)
 
 	/* initialize stack */
-	adr		x0, stack_base
+	adr		x0, stack_el3_base
 	mov		sp, x0
+	adr		x0, stack_base
+	SP_EL1_set(x0)
+	SP_EL0_set(x0)
 
+	adr		x0, _exc_vector
+	VBAR_EL3_set(x0)
+	VBAR_EL2_set(x0)
+	VBAR_EL1_set(x0)
+
+	ldr		x0, =0x00000400
+	SCR_EL3_set(x0)
+	ldr		x0, =0x00000400
+	HCR_EL2_set(x0)
+	mov		x0, #0
+	CPTR_EL3_set(x0)
+	CPTR_EL2_set(x0)
+	ldr		x0, =0x00300000
+	CPACR_EL1_set(x0)
+
+	adr		x0, entry_el1
+	ELR_EL3_set(x0)
+	ldr		x0, =0x000003C5
+	SPSR_EL3_set(x0)
+	/* goto EL1 entry_el1 */
+	eret
+
+entry_el1:
 	/* BSS clear */
 	eor		x0, x0, x0
 	ldr		x1, =__bss_start
@@ -24,9 +52,71 @@ bss_cp:
 
 end_bss:
 	bl		main
+end_loop:
+	b		end_loop
+
+.macro VECTOR_ENTRY func
+	.align	7
+	b		\func
+.endm
+	.section .vector
+	.global	_exc_vector
+	.type	_exc_vector, %function
+_exc_vector:
+	.align	12
+	/**/
+	VECTOR_ENTRY	exc_handler
+	VECTOR_ENTRY	exc_handler
+	VECTOR_ENTRY	exc_handler
+	VECTOR_ENTRY	exc_handler
+	/**/
+	VECTOR_ENTRY	exc_handler
+	VECTOR_ENTRY	exc_handler
+	VECTOR_ENTRY	exc_handler
+	VECTOR_ENTRY	exc_handler
+	/**/
+	VECTOR_ENTRY	exc_handler
+	VECTOR_ENTRY	exc_handler
+	VECTOR_ENTRY	exc_handler
+	VECTOR_ENTRY	exc_handler
+	/**/
+	VECTOR_ENTRY	exc_handler
+	VECTOR_ENTRY	exc_handler
+	VECTOR_ENTRY	exc_handler
+	VECTOR_ENTRY	exc_handler
+
+exc_handler:
+	stp		 x0,  x1, [sp, #-16]!
+	stp		 x2,  x3, [sp, #-16]!
+	stp		 x4,  x5, [sp, #-16]!
+	stp		 x6,  x7, [sp, #-16]!
+	stp		 x8,  x9, [sp, #-16]!
+	stp		x10, x11, [sp, #-16]!
+	stp		x12, x13, [sp, #-16]!
+	stp		x14, x15, [sp, #-16]!
+	stp		x16, x17, [sp, #-16]!
+	stp		x18, x30, [sp, #-16]!
+
+	bl		c_exc_handler
+
+	ldp		x18, x30, [sp], #16
+	ldp		x16, x17, [sp], #16
+	ldp		x14, x15, [sp], #16
+	ldp		x12, x13, [sp], #16
+	ldp		x10, x11, [sp], #16
+	ldp		 x8,  x9, [sp], #16
+	ldp		 x6,  x7, [sp], #16
+	ldp		 x4,  x5, [sp], #16
+	ldp		 x2,  x3, [sp], #16
+	ldp		 x0,  x1, [sp], #16
+	eret
 
 	.section .stack
 	.balign 16
 stack_bt:
 	.space	65536
 stack_base:
+	.balign 16
+stack_el3_bt:
+	.space	65536
+stack_el3_base:

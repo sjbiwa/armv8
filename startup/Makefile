@@ -45,3 +45,6 @@ $(TARGET_BIN): $(OBJS)
 
 clean:
 	$(RM) -f $(TARGET) $(TARGET_BIN) $(TARGET_ELF) $(OBJS)
+
+run:
+	Foundation_Platform --visualization --image=$(TARGET_ELF)
