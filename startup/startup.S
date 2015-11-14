@@ -4,6 +4,12 @@
 	.global	_startup
 	.type	_startup, %function
 _startup:
+	/* check core number */
+	MPIDR_EL1_get(x0)
+	and		x0, x0, #0x0f
+	cmp		x0, #0
+	bne		end_loop
+
 	/* disable interrupt */
 	DAIFSet_seti(0xf)
 
@@ -53,6 +59,7 @@ bss_cp:
 end_bss:
 	bl		main
 end_loop:
+	wfe
 	b		end_loop
 
 .macro VECTOR_ENTRY func
@@ -63,7 +70,7 @@ end_loop:
 	.global	_exc_vector
 	.type	_exc_vector, %function
 _exc_vector:
-	.align	12
+	.align	11
 	/**/
 	VECTOR_ENTRY	exc_handler
 	VECTOR_ENTRY	exc_handler

@@ -47,4 +47,4 @@ clean:
 	$(RM) -f $(TARGET) $(TARGET_BIN) $(TARGET_ELF) $(OBJS)
 
 run:
-	Foundation_Platform --visualization --image=$(TARGET_ELF)
+	Foundation_Platform --visualization --cores=4 --gicv3 --image=$(TARGET_ELF)
