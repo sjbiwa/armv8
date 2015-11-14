@@ -19,14 +19,10 @@ _startup:
 	/* initialize stack */
 	adr		x0, stack_el3_base
 	mov		sp, x0
-	adr		x0, stack_base
-	SP_EL1_set(x0)
-	SP_EL0_set(x0)
 
 	adr		x0, _exc_vector
 	VBAR_EL3_set(x0)
 	VBAR_EL2_set(x0)
-	VBAR_EL1_set(x0)
 
 	ldr		x0, =0x00000400
 	SCR_EL3_set(x0)
@@ -35,8 +31,6 @@ _startup:
 	mov		x0, #0
 	CPTR_EL3_set(x0)
 	CPTR_EL2_set(x0)
-	ldr		x0, =0x00300000
-	CPACR_EL1_set(x0)
 
 	adr		x0, entry_el1
 	ELR_EL3_set(x0)
@@ -46,6 +40,20 @@ _startup:
 	eret
 
 entry_el1:
+	/* disable interrupt */
+	DAIFSet_seti(0xf)
+	/* SP is ELx */
+	SPSel_seti(1)
+	/* EL1 stack */
+	adr		x0, stack_base
+	mov		sp, x0
+	/* exception vector base */
+	adr		x0, _exc_vector
+	VBAR_EL1_set(x0)
+	/* FPU/SIMD enable */
+	ldr		x0, =0x00300000
+	CPACR_EL1_set(x0)
+
 	/* BSS clear */
 	eor		x0, x0, x0
 	ldr		x1, =__bss_start
