@@ -29,6 +29,7 @@ void main_entry()
 	register uint32_t value1 = 0;
 	register uint32_t value2 = 0;
 
+	tprintf("entry step:EL=%08X\n", CurrentEL_get());
 
 	tprintf("CNTFRQ_EL0:%08X\n", CNTFRQ_EL0_get());
 	tprintf("CNTP_CTL_EL0:%08X\n", CNTP_CTL_EL0_get());

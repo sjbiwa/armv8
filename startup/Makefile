@@ -2,7 +2,7 @@
 # Makefile for ARMv8-A sample
 #
 
-TOOLS_PREFIX = aarch64-none-elf-
+TOOLS_PREFIX = aarch64-elf-
 
 CC = $(TOOLS_PREFIX)gcc
 AS = $(TOOLS_PREFIX)gcc
@@ -12,11 +12,11 @@ OBJCOPY = $(TOOLS_PREFIX)objcopy
 RM = rm
 
 CFLAGS  +=  -std=gnu11 -mcpu=cortex-a53
-CFLAGS  += -g -gdwarf-3 -Os
+CFLAGS  += -g -gdwarf-3 -O2
 AFLAGS  += $(CFLAGS) -D__ASM__
 LDFLAGS += -mcpu=cortex-a53 -g -T $(LDSCRIPT)
 LDFLAGS += -nostdlib -static -Wl,-Ttext=$(START_MEM_ADDR),--build-id=none
-LDLIBS   = -lgcc
+LDLIBS   = -lgcc -lc
 
 INC   =
 VPATH =
@@ -40,11 +40,11 @@ A_SRCS = startup.S
 	$(AS) -c $(AFLAGS) $(INC) $(DEFS) -v $<
 	
 $(TARGET_BIN): $(OBJS)
-	$(LD) $(LDFLAGS) -o $(TARGET_ELF) $(OBJS)
+	$(LD) $(LDFLAGS) -o $(TARGET_ELF) $(OBJS) $(LDLIBS)
 	$(OBJCOPY) -O binary $(TARGET_ELF) $(TARGET_BIN)
 
 clean:
 	$(RM) -f $(TARGET) $(TARGET_BIN) $(TARGET_ELF) $(OBJS)
 
 run:
-	Foundation_Platform --visualization --cores=4 --gicv3 --image=$(TARGET_ELF)
+	Foundation_Platform --visualization --gicv3 --image=$(TARGET_ELF)

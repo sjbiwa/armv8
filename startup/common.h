@@ -1,5 +1,6 @@
 #ifndef _COMMON_H_
 #define _COMMON_H_
+#include <stdint.h>
 
 #define	iowrite8n(addr, idx, value)			do { *((volatile uint8_t*)(addr)+idx) = (value); } while (0)
 #define	iowrite16n(addr, idx, value)		do { *((volatile uint16_t*)(addr)+idx) = (value); } while (0)
