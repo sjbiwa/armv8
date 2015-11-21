@@ -2,7 +2,7 @@
 # Makefile for ARMv8-A sample
 #
 
-TOOLS_PREFIX = aarch64-elf-
+TOOLS_PREFIX = aarch64-none-elf-
 
 CC = $(TOOLS_PREFIX)gcc
 AS = $(TOOLS_PREFIX)gcc
@@ -47,4 +47,4 @@ clean:
 	$(RM) -f $(TARGET) $(TARGET_BIN) $(TARGET_ELF) $(OBJS)
 
 run:
-	Foundation_Platform --visualization --gicv3 --image=$(TARGET_ELF)
+	Foundation_Platform --visualization --cores=1 --gicv3 --image=$(TARGET_ELF)

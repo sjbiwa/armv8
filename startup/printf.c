@@ -35,8 +35,33 @@ static int vtsprintf(char* buff,char* fmt,va_list arg);
 
 static int tsprintf_string(char* ,char* );
 static int tsprintf_char(int ,char* );
-static int tsprintf_decimal(signed long,char* ,int ,int );
-static int tsprintf_hexadecimal(unsigned long ,char* ,int ,int ,int );
+static int tsprintf_decimal(int32_t, char* ,int ,int );
+static int tsprintf_hexadecimal(uint32_t, char* ,int ,int ,int );
+
+static void debug_print_init(void)
+{
+	iowrite32(UART_BASE+UARTIBRD, 0x6);
+	iowrite32(UART_BASE+UARTFBRD, 0x21);
+	iowrite32(UART_BASE+UARTLCR_H, 0x70);
+	iowrite32(UART_BASE+UARTCR, 0x301);
+}
+
+static inline void debug_putc(char c)
+{
+	while (ioread32(UART_BASE+UARTFR) & (0x1<<5));
+	iowrite32(UART_BASE+UARTDR, c);
+}
+
+static void debug_print(char* buff)
+{
+	while ( *buff ) {
+		debug_putc(*buff);
+		if ( *buff == '\n' ) {
+			debug_putc('\r');
+		}
+		buff++;
+	}
+}
 
 static int
 vtsprintf(char* buff,char* fmt,va_list arg){
@@ -64,13 +89,13 @@ vtsprintf(char* buff,char* fmt,va_list arg){
 
 			switch(*fmt){
 			case 'd':		/* 10進数 */
-				size = tsprintf_decimal(va_arg(arg,signed long),buff,zeroflag,width);
+				size = tsprintf_decimal(va_arg(arg,int32_t),buff,zeroflag,width);
 				break;
 			case 'x':		/* 16進数 0-f */
-				size = tsprintf_hexadecimal(va_arg(arg,unsigned long),buff,0,zeroflag,width);
+				size = tsprintf_hexadecimal(va_arg(arg,uint32_t),buff,0,zeroflag,width);
 				break;
 			case 'X':		/* 16進数 0-F */
-				size = tsprintf_hexadecimal(va_arg(arg,unsigned long),buff,1,zeroflag,width);
+				size = tsprintf_hexadecimal(va_arg(arg,uint32_t),buff,1,zeroflag,width);
 				break;
 			case 'c':		/* キャラクター */
 				size = tsprintf_char(va_arg(arg,int),buff);
@@ -106,7 +131,7 @@ vtsprintf(char* buff,char* fmt,va_list arg){
   数値 => 10進文字列変換
 */
 static int
-tsprintf_decimal(signed long val,char* buff,int zf,int wd){
+tsprintf_decimal(int32_t val,char* buff,int zf,int wd){
 	int i;
 	char tmp[10];
 	char* ptmp = tmp + 10;
@@ -173,7 +198,7 @@ tsprintf_decimal(signed long val,char* buff,int zf,int wd){
   数値 => 16進文字列変換
 */
 static int
-tsprintf_hexadecimal(unsigned long val,char* buff,
+tsprintf_hexadecimal(uint32_t val,char* buff,
 								int capital,int zf,int wd){
 	int i;
 	char tmp[10];
@@ -268,31 +293,6 @@ tsprintf(char* buff,char* fmt, ...){
 /*
   Tiny sprintf関数
 */
-
-static void debug_print_init(void)
-{
-	iowrite32(UART_BASE+UARTIBRD, 0x6);
-	iowrite32(UART_BASE+UARTFBRD, 0x21);
-	iowrite32(UART_BASE+UARTLCR_H, 0x70);
-	iowrite32(UART_BASE+UARTCR, 0x301);
-}
-
-static inline void debug_putc(char c)
-{
-	while (ioread32(UART_BASE+UARTFR) & (0x1<<5));
-	iowrite32(UART_BASE+UARTDR, c);
-}
-
-static void debug_print(char* buff)
-{
-	while ( *buff ) {
-		debug_putc(*buff);
-		if ( *buff == '\n' ) {
-			debug_putc('\r');
-		}
-		buff++;
-	}
-}
 
 void tprintf_init(void)
 {

@@ -7,7 +7,7 @@ _startup:
 	/* check core number */
 	MPIDR_EL1_get(x0)
 	and		x0, x0, #0x0f
-	cmp		x0, #0
+	cmp		x0, xzr
 	bne		end_loop
 
 	/* disable interrupt */
@@ -28,9 +28,8 @@ _startup:
 	SCR_EL3_set(x0)
 	ldr		x0, =0x00000400
 	HCR_EL2_set(x0)
-	mov		x0, #0
-	CPTR_EL3_set(x0)
-	CPTR_EL2_set(x0)
+	CPTR_EL3_set(xzr)
+	CPTR_EL2_set(xzr)
 
 	adr		x0, entry_el1
 	ELR_EL3_set(x0)
@@ -39,6 +38,9 @@ _startup:
 	/* goto EL1 entry_el1 */
 	eret
 
+/***************************************/
+/* EL1での起動エントリ                 */
+/***************************************/
 entry_el1:
 	/* disable interrupt */
 	DAIFSet_seti(0xf)
@@ -55,13 +57,12 @@ entry_el1:
 	CPACR_EL1_set(x0)
 
 	/* BSS clear */
-	eor		x0, x0, x0
 	ldr		x1, =__bss_start
 	ldr		x2, =__bss_end
 bss_cp:
 	cmp		x1, x2
 	bhs		end_bss
-	str		x0, [x1], #8
+	str		xzr, [x1], #8
 	b		bss_cp
 
 end_bss:

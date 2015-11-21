@@ -70,8 +70,6 @@ int main()
 	extern void return_el1();
 
 	tprintf_init();
-	tprintf("Hello world\n");
-
 	main_entry();
 
 	return 0;
