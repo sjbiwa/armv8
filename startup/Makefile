@@ -30,7 +30,7 @@ TARGET_ELF = $(TARGET).elf
 LDSCRIPT = link.ld
 START_MEM_ADDR = 0x80000000
 
-C_SRCS = main.c printf.c
+C_SRCS = main.c printf.c gicv3.c malloc.c memory.c
 A_SRCS = startup.S
 
 .c.o:
