@@ -57,6 +57,10 @@ void main_entry()
 	sys_malloc_init();
 	sys_malloc_add_block((void*)0x80100000/*&__heap_start*/, 0x1000000);
 	tprintf("sys_malloc_init done\n");
+
+	gic_init();
+
+	for (;;);
 #define	PTR_MAX		100
 static	void* ptr[PTR_MAX];
 	MemSize_t size = 256;

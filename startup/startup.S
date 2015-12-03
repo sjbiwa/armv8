@@ -31,6 +31,15 @@ _startup:
 	CPTR_EL3_set(xzr)
 	CPTR_EL2_set(xzr)
 
+	/* init GIC */
+	mov		x0, #0x0000000f
+	MSR S3_6_C12_C12_5, x0	// msr		ICC_SRE_EL3, x0
+	//MSR S3_4_C12_C9_5, x0	//msr		ICC_SRE_EL2, x0
+	mov		x0, #0x0
+	MSR S3_6_C12_C12_4, x0	// 	msr		ICC_CTLR_EL3, x0
+	//mov		x0, #0x3
+	//msr		ICC_IGRPEN1_EL3, x0
+
 	adr		x0, entry_el1
 	ELR_EL3_set(x0)
 	ldr		x0, =0x000003C5

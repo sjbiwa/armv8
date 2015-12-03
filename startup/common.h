@@ -66,4 +66,6 @@ extern void __sys_free(void* ptr);
 extern void _memset(void* ptr, uint32_t val, uint32_t len);
 extern void _memcpy(void* dst, void* src, uint32_t len);
 
+extern void gic_init(void);
+
 #endif /* STARTUP_COMMON_H_ */
