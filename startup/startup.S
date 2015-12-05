@@ -1,4 +1,6 @@
 #include "armv8reg.h"
+#include "gicv3reg.h"
+
 	.section .startup
 	.align	2
 	.global	_startup
@@ -26,19 +28,35 @@ _startup:
 
 	ldr		x0, =0x00000400
 	SCR_EL3_set(x0)
-	ldr		x0, =0x00000400
+	ldr		x0, =0x80000000
 	HCR_EL2_set(x0)
 	CPTR_EL3_set(xzr)
 	CPTR_EL2_set(xzr)
 
+	/* timer */
+	ldr		x0, =24000000
+	CNTFRQ_EL0_set(x0)
+
 	/* init GIC */
 	mov		x0, #0x0000000f
-	MSR S3_6_C12_C12_5, x0	// msr		ICC_SRE_EL3, x0
-	//MSR S3_4_C12_C9_5, x0	//msr		ICC_SRE_EL2, x0
+	ICC_SRE_EL3_set(x0)
+	/* ICC_SRE_EL2設定のため NSへ遷移 */
+	SCR_EL3_get(x1)
+	orr	x0, x1, #1
+	SCR_EL3_set(x0)
+	isb
+	mov		x0, #0x0000000f
+	ICC_SRE_EL2_set(x0)
+	SCR_EL3_set(x1)
+	isb
+	mov		x0, #0x00000007
+	ICC_SRE_EL1_set(x0)
+
 	mov		x0, #0x0
-	MSR S3_6_C12_C12_4, x0	// 	msr		ICC_CTLR_EL3, x0
-	//mov		x0, #0x3
-	//msr		ICC_IGRPEN1_EL3, x0
+	ICC_CTLR_EL3_set(x0)
+	mov		x0, #0x3
+	ICC_IGRPEN1_EL3_get(x0)
+	/**/
 
 	adr		x0, entry_el1
 	ELR_EL3_set(x0)
@@ -90,26 +108,55 @@ end_loop:
 _exc_vector:
 	.align	11
 	/**/
-	VECTOR_ENTRY	exc_handler
-	VECTOR_ENTRY	exc_handler
-	VECTOR_ENTRY	exc_handler
-	VECTOR_ENTRY	exc_handler
+	VECTOR_ENTRY	sync_handler
+	VECTOR_ENTRY	irq_handler
+	VECTOR_ENTRY	fiq_handler
+	VECTOR_ENTRY	serr_handler
 	/**/
-	VECTOR_ENTRY	exc_handler
-	VECTOR_ENTRY	exc_handler
-	VECTOR_ENTRY	exc_handler
-	VECTOR_ENTRY	exc_handler
+	VECTOR_ENTRY	sync_handler
+	VECTOR_ENTRY	irq_handler
+	VECTOR_ENTRY	fiq_handler
+	VECTOR_ENTRY	serr_handler
 	/**/
-	VECTOR_ENTRY	exc_handler
-	VECTOR_ENTRY	exc_handler
-	VECTOR_ENTRY	exc_handler
-	VECTOR_ENTRY	exc_handler
+	VECTOR_ENTRY	sync_handler
+	VECTOR_ENTRY	irq_handler
+	VECTOR_ENTRY	fiq_handler
+	VECTOR_ENTRY	serr_handler
 	/**/
-	VECTOR_ENTRY	exc_handler
-	VECTOR_ENTRY	exc_handler
-	VECTOR_ENTRY	exc_handler
-	VECTOR_ENTRY	exc_handler
+	VECTOR_ENTRY	sync_handler
+	VECTOR_ENTRY	irq_handler
+	VECTOR_ENTRY	fiq_handler
+	VECTOR_ENTRY	serr_handler
 
+irq_handler:
+	stp		 x0,  x1, [sp, #-16]!
+	stp		 x2,  x3, [sp, #-16]!
+	stp		 x4,  x5, [sp, #-16]!
+	stp		 x6,  x7, [sp, #-16]!
+	stp		 x8,  x9, [sp, #-16]!
+	stp		x10, x11, [sp, #-16]!
+	stp		x12, x13, [sp, #-16]!
+	stp		x14, x15, [sp, #-16]!
+	stp		x16, x17, [sp, #-16]!
+	stp		x18, x30, [sp, #-16]!
+
+	bl		c_irq_handler
+
+	ldp		x18, x30, [sp], #16
+	ldp		x16, x17, [sp], #16
+	ldp		x14, x15, [sp], #16
+	ldp		x12, x13, [sp], #16
+	ldp		x10, x11, [sp], #16
+	ldp		 x8,  x9, [sp], #16
+	ldp		 x6,  x7, [sp], #16
+	ldp		 x4,  x5, [sp], #16
+	ldp		 x2,  x3, [sp], #16
+	ldp		 x0,  x1, [sp], #16
+	eret
+
+sync_handler:
+fiq_handler:
+serr_handler:
 exc_handler:
 	stp		 x0,  x1, [sp, #-16]!
 	stp		 x2,  x3, [sp, #-16]!

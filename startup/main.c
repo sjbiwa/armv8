@@ -39,6 +39,7 @@ void main_entry()
 	tprintf("CNTP_CVAL_EL0:%08X\n", CNTP_CVAL_EL0_get());
 	tprintf("CNTP_TVAL_EL0:%08X\n", CNTP_TVAL_EL0_get());
 	tprintf("CNTPCT_EL0:%08X\n", CNTPCT_EL0_get());
+	tprintf("MPIDR_EL1:%08X\n", MPIDR_EL1_get());
 
 	CNTP_CTL_EL0_set(0x07);
 
@@ -59,6 +60,7 @@ void main_entry()
 	tprintf("sys_malloc_init done\n");
 
 	gic_init();
+	timer_test();
 
 	for (;;);
 #define	PTR_MAX		100

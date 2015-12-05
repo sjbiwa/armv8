@@ -3,9 +3,9 @@
 
 #define	SYSTEM_BASE				(0x001C010000)
 
-#define	GIC_GICD_BASE			(0x002F000000u)
-#define	GIC_GICR_BASE			(0x002F100000u)
-#define	GIC_GICC_BASE			(0x002C002000u)
+#define	GIC_GICD_BASE			(0x002F000000)
+#define	GIC_GICR_BASE			(0x002F100000)
+#define	GIC_GICC_BASE			(0x002C002000)
 
 
 #endif /* _TARGET_CONF_H_ */
